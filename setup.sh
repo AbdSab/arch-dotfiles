@@ -13,3 +13,8 @@ ln -sf ~/dotfiles/kitty/kitty.conf ~/.config/kitty/kitty.conf
 pacman -S noto-fonts noto-fonts-extra
 mkdir -p ~/.config/fontconfig
 ln -s ~/dotfiles/config/fonts.conf ~/.config/fontconfig/fonts.conf
+
+#Dunst
+pacman -S dunst libnotify
+mkdir ~/.config/dunst
+ln -s ~/dotfiles/config/dunstrc ~/.config/dunst/dunstrc
