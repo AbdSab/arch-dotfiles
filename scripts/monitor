@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Define your display names
+EXT="HDMI-1-0"
+INT="eDP-1"
+
+# Check if HDMI is connected
+STATUS=$(xrandr | grep "^$EXT connected")
+
+if [ -n "$STATUS" ]; then
+    # Default position if no argument is provided
+    POSITION="left-of"
+
+    # Handle user input for position
+    case "$1" in
+        right) POSITION="right-of" ;;
+        up)    POSITION="above"    ;;
+        down)  POSITION="below"    ;;
+        left)  POSITION="left-of"  ;;
+    esac
+
+    echo "HDMI connected. Setting to $POSITION $INT..."
+    xrandr --output "$EXT" --auto --"$POSITION" "$INT"
+else
+    echo "HDMI not detected. Reverting to internal display only..."
+    xrandr --output "$EXT" --off --output "$INT" --auto
+fi

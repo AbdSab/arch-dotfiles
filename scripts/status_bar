@@ -1,0 +1,52 @@
+#!/bin/bash
+
+get_battery() {
+  capacity=$(cat /sys/class/power_supply/BAT1/capacity)
+  status=$(cat /sys/class/power_supply/BAT1/status)
+
+  icon="BAT"
+  [ "$status" = "Charging" ] && icon="CHR"
+
+  echo "[$icon $capacity%]"
+}
+
+get_ram() {
+  mem=$(free -m | awk '/Mem:/ { printf("%.1fG/%.0fG", $3/1024, $2/1024) }')
+  echo "[RAM $mem]"
+}
+
+get_storage() {
+  hdd=$(df -h / | awk 'NR==2 { print $4 }')
+  echo "[HDD $hdd]"
+}
+
+get_volume() {
+  mute=$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')
+
+  if [ "$mute" = "yes" ]; then
+    echo "[VOL MUTE]"
+  else
+    vol=$(pactl get-sink-volume @DEFAULT_SINK@ | awk -F'/' '{ print $2 }' | head -1 | tr -d ' %')
+    echo "[VOL $vol%]"
+  fi
+}
+
+get_time() {
+  # %I = Hour (01-12)
+  # %M = Minute
+  # %p = AM or PM
+  echo "$(date '+%a %b %d %I:%M %p')"
+}
+
+listen_volume() {
+  pactl subscribe | grep --line-buffered "sink" | while read -r event; do
+    current_vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    echo "Update UI with: $current_vol"
+  done
+}
+
+# Main Loop
+while true; do
+  xsetroot -name "$(get_storage) $(get_ram) $(get_battery) $(get_volume) $(get_time)"
+  sleep 2
+done
