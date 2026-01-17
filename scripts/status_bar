@@ -38,12 +38,19 @@ get_time() {
   echo "$(date '+%a %b %d %I:%M %p')"
 }
 
-listen_volume() {
-  pactl subscribe | grep --line-buffered "sink" | while read -r event; do
-    current_vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
-    echo "Update UI with: $current_vol"
-  done
-}
+#listen_volume() {
+#  pactl subscribe | grep --line-buffered "sink" | while read -r event; do
+#    current_vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+#    echo "Update UI with: $current_vol"
+#  done
+#}
+
+#get_reminder() {
+#  $file = "/tmp/reminder/$(date +"%H:%M")"
+#  if [[ -f $file ]]; then
+#    cat $file
+#  fi
+#}
 
 # Main Loop
 while true; do

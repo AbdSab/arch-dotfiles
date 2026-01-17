@@ -1,0 +1,10 @@
+TIME=$(date -d "$1" +"%H:%M")
+MESSAGE=$2
+REMINDER=$(date -d "$TIME 10 minutes ago" +"%H:%M")
+
+mkdir -p /tmp/reminder
+echo "$MESSAGE" >"/tmp/reminder/$REMINDER"
+
+echo "notify-send 'Reminder (10m)' '$MESSAGE'" | at "$TIME - 10 minutes"
+echo "notify-send 'Reminder (5m)' '$MESSAGE'" | at "$TIME - 5 minutes"
+echo "notify-send 'Reminder NOW' '$MESSAGE'" | at "$TIME"
