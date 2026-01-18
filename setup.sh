@@ -1,3 +1,6 @@
+chmod +x ~/dotfiles/scripts/*
+ln -sf ~/dotfiles/scripts/* /usr/local/bin
+
 #X11
 ln -sf ~/dotfiles/config/.xinitrc ~/.xinitrc
 
