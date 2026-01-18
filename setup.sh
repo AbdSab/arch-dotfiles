@@ -2,6 +2,7 @@ chmod +x ~/dotfiles/scripts/*
 ln -sf ~/dotfiles/scripts/* /usr/local/bin
 
 #X11
+pacman -S xorg-server xorg-xinit libx11 libxft libxinerama base-devel git
 ln -sf ~/dotfiles/config/.xinitrc ~/.xinitrc
 
 #Zsh
