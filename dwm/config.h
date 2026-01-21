@@ -105,7 +105,7 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_Right,  viewnexttag,	   {0} },
 	{ MODKEY|ShiftMask,		XK_Left,   viewprevtag,    {0} },	
 	{ MODKEY|ShiftMask,             XK_s,      spawn,          SHCMD("win=$(xdotool getactivewindow getwindowname | tr ' /' '_'); scrot -s -f \"$HOME/Pictures/screenshots/${win}_$(date +%Y-%m-%d).png\" -e 'xclip -selection clipboard -t image/png -i $f'") },
-
+	{ MODKEY|ShiftMask,		XK_m,	   spawn,          SHCMD("win=$(xdotool getactivewindow getwindowname | tr ' /' '_'); scrot -s -f \"$HOME/Pictures/screenshots/${win}_$(date +%Y-%m-%d).png\" -e 'mark $f'")},
 	{ 0,                            XF86XK_AudioLowerVolume,     spawn,          {.v = downvol } },
 	{ 0,                            XF86XK_AudioMute,            spawn,          {.v = mutevol } },
 	{ 0,                            XF86XK_AudioRaiseVolume,     spawn,          {.v = upvol   } }

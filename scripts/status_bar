@@ -56,8 +56,30 @@ get_ip() {
   echo "[IP: $(ip -4 addr show | awk '/inet 192\.168\./ {split($2,a,"/"); split(a[1],b,"."); print b[3]"."b[4]}')]"
 }
 
+get_cpu() {
+  read -r cpu a b c d rest < /proc/stat
+  prev_idle=$d
+  prev_total=$((a+b+c+d))
+
+  sleep 0.5
+
+  read -r cpu a b c d rest < /proc/stat
+  idle=$d
+  total=$((a+b+c+d))
+
+  usage=$((100 * ((total - prev_total) - (idle - prev_idle)) / (total - prev_total)))
+
+  temp=$(cat /sys/class/thermal/thermal_zone0/temp)
+  temp=$((temp / 1000))
+
+  echo "[CPU: $usage% / ${temp}°C]"
+}
+
+PREV_IDLE=0
+PREV_TOTAL=0
+
 # Main Loop
 while true; do
-  xsetroot -name "$(get_ip) $(get_storage) $(get_ram) $(get_battery) $(get_volume) $(get_time)"
+  xsetroot -name "$(get_ip) $(get_cpu) $(get_storage) $(get_ram) $(get_battery) $(get_volume) $(get_time)"
   sleep 2
 done
