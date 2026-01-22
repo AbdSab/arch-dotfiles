@@ -26,3 +26,4 @@ ln -s ~/dotfiles/config/dunstrc ~/.config/dunst/dunstrc
 #Screenshot
 pacman -S scrot xclip xdotool
 
+sudo chsh -s /usr/bin/zsh $USER

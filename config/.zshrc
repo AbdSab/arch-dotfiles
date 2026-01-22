@@ -12,3 +12,20 @@ compinit
 
 PROMPT='[%n@%m %~$] '
 export PATH="$HOME/dotfiles/scripts:$PATH"
+
+# Add Arch-specific completions to fpath
+fpath=(/usr/share/zsh/site-functions $fpath)
+
+# Initialize the completion system
+autoload -Uz compinit
+compinit
+
+# Enable Bash completion compatibility (often helps with Git)
+autoload -Uz bashcompinit
+bashcompinit
+
+# Use a menu for completion
+zstyle ':completion:*' menu select
+
+# Group completions by type (e.g., files vs commands)
+zstyle ':completion:*' group-name ''
