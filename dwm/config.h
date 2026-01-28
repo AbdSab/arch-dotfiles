@@ -62,9 +62,6 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static const char *termcmd[]  = { "kitty", NULL };
 
 
-static const char *upvol[]   = { "/usr/bin/pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%",     NULL };
-static const char *downvol[] = { "/usr/bin/pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%",     NULL };
-static const char *mutevol[] = { "/usr/bin/pactl", "set-sink-mute",   "@DEFAULT_SINK@", "toggle", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -106,9 +103,9 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_Left,   viewprevtag,    {0} },	
 	{ MODKEY|ShiftMask,             XK_s,      spawn,          SHCMD("win=$(xdotool getactivewindow getwindowname | tr ' /' '_'); scrot -s -f \"$HOME/Pictures/screenshots/${win}_$(date +%Y-%m-%d).png\" -e 'xclip -selection clipboard -t image/png -i $f'") },
 	{ MODKEY|ShiftMask,		XK_m,	   spawn,          SHCMD("win=$(xdotool getactivewindow getwindowname | tr ' /' '_'); scrot -s -f \"$HOME/Pictures/screenshots/${win}_$(date +%Y-%m-%d).png\" -e 'mark $f'")},
-	{ 0,                            XF86XK_AudioLowerVolume,     spawn,          {.v = downvol } },
-	{ 0,                            XF86XK_AudioMute,            spawn,          {.v = mutevol } },
-	{ 0,                            XF86XK_AudioRaiseVolume,     spawn,          {.v = upvol   } }
+	{ 0,                            XF86XK_AudioLowerVolume,     spawn,         SHCMD("volume down") },
+	{ 0,                            XF86XK_AudioMute,            spawn,         SHCMD("volume mute")},
+	{ 0,                            XF86XK_AudioRaiseVolume,     spawn,         SHCMD("volume up") }
 };
 
 /* button definitions */

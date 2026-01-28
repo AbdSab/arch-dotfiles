@@ -1,0 +1,14 @@
+#!/bin/sh
+
+SINK="@DEFAULT_SINK@"
+
+case "$1" in
+  up)    pactl set-sink-volume $SINK +1% ;;
+  down)  pactl set-sink-volume $SINK -1% ;;
+  mute)  pactl set-sink-mute   $SINK toggle ;;
+esac
+
+VOL=$(pactl get-sink-volume $SINK | awk '{print $5}')
+MUTE=$(pactl get-sink-mute $SINK | awk '{print $2}')
+
+[ "$MUTE" = yes ] && notify-send -r 999 "Muted" || notify-send -r 999 "Volume $VOL"
