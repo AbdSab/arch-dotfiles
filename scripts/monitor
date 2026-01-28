@@ -8,7 +8,7 @@ RIGHT="DP-4"
 if xrandr | grep "^$LEFT connected"; then
     # 1. Set HDMI-0 as Primary (Main screen for dwm bar)
     # 2. Place DP-4 to the right of HDMI-0
-    xrandr --output "$LEFT" --primary --mode 1920x1080 --pos 0x0 --rotate normal \
+    xrandr --output "$LEFT" --primary --mode 1920x1080 --pos 0x0 --dpi 96  --rotate normal \
            --output "$RIGHT" --mode 2560x1440 --right-of "$LEFT" --rotate normal
 else
     # Fallback: If HDMI is unplugged, use DP-4 as primary
