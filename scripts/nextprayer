@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# --- Configuration ---
+LAT="33.5731"
+LON="-7.5898"
+ARGS="--utc 1 --method mwl --asr shafi"
+
+# --- CUSTOMIZE YOUR OUTPUT HERE ---
+FORMAT="%n %t"
+# ----------------------------------
+
+find_next() {
+    local target_date=$1
+    local now=$2
+    
+    # Get prayer times
+    local output=$(nprayer --lat $LAT --lon $LON --date "$target_date" $ARGS)
+    
+    while IFS= read -r line; do
+    	[ -z "$line" ] && continue
+
+    	p_name=$(echo "$line" | cut -d'=' -f1)
+    	p_time=$(echo "$line" | cut -d'=' -f2)
+
+    	if [[ "${p_time/:/}" > "${now/:/}" ]]; then
+        	# Convert to AM/PM
+        	p_time_ampm=$(date -d "$p_time" +"%-I:%M %p")
+
+        	local result=$FORMAT
+        	result=${result//%n/$p_name}
+        	result=${result//%t/$p_time_ampm}
+        	echo "$result"
+        	return 0
+    	fi
+    done <<< "$output"
+
+    
+    return 1
+}
+
+# Get current time and dates
+CURRENT_TIME=$(date +%H:%M)
+TODAY=$(date +%Y-%m-%d)
+TOMORROW=$(date -d "tomorrow" +%Y-%m-%d 2>/dev/null || date -v+1d +%Y-%m-%d)
+
+# Execution logic
+NEXT_PRAYER=$(find_next "$TODAY" "$CURRENT_TIME")
+
+if [ -z "$NEXT_PRAYER" ]; then
+    NEXT_PRAYER=$(find_next "$TOMORROW" "00:00")
+fi
+
+echo "$NEXT_PRAYER"
