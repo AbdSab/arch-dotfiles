@@ -1,5 +1,4 @@
 #!/bin/sh
-
 SINK="@DEFAULT_SINK@"
 
 case "$1" in

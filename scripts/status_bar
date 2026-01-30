@@ -1,89 +1,111 @@
 #!/bin/bash
 
+TMP="/tmp/dwm_status"
+mkdir -p "$TMP"
+touch "$TMP/ip" "$TMP/cpu" "$TMP/storage" "$TMP/ram" "$TMP/battery" "$TMP/volume" "$TMP/next_prayer"
+
+trap "kill 0" EXIT
+
+update_bar() {
+    IP=$(cat "$TMP/ip" 2>/dev/null)
+    CPU=$(cat "$TMP/cpu" 2>/dev/null)
+    STORAGE=$(cat "$TMP/storage" 2>/dev/null)
+    RAM=$(cat "$TMP/ram" 2>/dev/null)
+    BATTERY=$(cat "$TMP/battery" 2>/dev/null)
+    VOLUME=$(cat "$TMP/volume" 2>/dev/null)
+    NEXT_PRAYER=$(cat "$TMP/next_prayer" 2>/dev/null)
+    TIME=$(date '+%a %b %d %I:%M %p')
+
+    xsetroot -name "[$IP] [$CPU] [$STORAGE] [$RAM] [$BATTERY] [$VOLUME] [$NEXT_PRAYER] $TIME"
+}
+
+trap "update_bar" USR1
+
 get_battery() {
-  capacity=$(cat /sys/class/power_supply/BAT1/capacity)
-  status=$(cat /sys/class/power_supply/BAT1/status)
-
-  icon="BAT"
-  [ "$status" = "Charging" ] && icon="CHR"
-
-  echo "[$icon $capacity%]"
+  while true; do
+    capacity=$(cat /sys/class/power_supply/BAT1/capacity 2>/dev/null || echo "0")
+    status=$(cat /sys/class/power_supply/BAT1/status 2>/dev/null || echo "Unknown")
+    icon="BAT"; [ "$status" = "Charging" ] && icon="CHR"
+    echo "$icon $capacity%" > "$TMP/battery"
+    sleep 5m
+  done
 }
 
 get_ram() {
-  mem=$(free -m | awk '/Mem:/ { printf("%.1fG/%.0fG", $3/1024, $2/1024) }')
-  echo "[RAM $mem]"
+  while true; do
+    mem=$(free -m | awk '/Mem:/ { printf("%.1fG/%.0fG", $3/1024, $2/1024) }')
+    echo "RAM $mem" > "$TMP/ram"
+    sleep 1m
+  done
 }
 
 get_storage() {
-  hdd=$(df -h / | awk 'NR==2 { print $4 }')
-  echo "[HDD $hdd]"
+  while true; do
+    hdd=$(df -h / | awk 'NR==2 { print $4 }')
+    echo "SSD $hdd" > "$TMP/storage"
+    sleep 5m
+  done
 }
 
 get_volume() {
-  mute=$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')
+  pactl get-sink-mute @DEFAULT_SINK@ > /dev/null 2>&1
 
-  if [ "$mute" = "yes" ]; then
-    echo "[VOL MUTE]"
-  else
-    vol=$(pactl get-sink-volume @DEFAULT_SINK@ | awk -F'/' '{ print $2 }' | head -1 | tr -d ' %')
-    echo "[VOL $vol%]"
-  fi
+  while read -r event; do
+    mute=$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')
+    if [ "$mute" = "yes" ]; then
+      echo "VOL MUTE" > "$TMP/volume"
+    else
+      vol=$(pactl get-sink-volume @DEFAULT_SINK@ | awk -F'/' '{ print $2 }' | head -1 | tr -d ' %')
+      echo "VOL $vol%" > "$TMP/volume"
+    fi
+    kill -USR1 $$
+  done < <(pactl subscribe | grep --line-buffered "sink")
 }
-
-get_time() {
-  # %I = Hour (01-12)
-  # %M = Minute
-  # %p = AM or PM
-  echo "$(date '+%a %b %d %I:%M %p')"
-}
-
-#listen_volume() {
-#  pactl subscribe | grep --line-buffered "sink" | while read -r event; do
-#    current_vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
-#    echo "Update UI with: $current_vol"
-#  done
-#}
-
-#get_reminder() {
-#  $file = "/tmp/reminder/$(date +"%H:%M")"
-#  if [[ -f $file ]]; then
-#    cat $file
-#  fi
-#}
 
 get_ip() {
-  echo "[IP: $(ip -4 addr show | awk '/inet 192\.168\./ {split($2,a,"/"); split(a[1],b,"."); print b[3]"."b[4]}')]"
+  while true; do
+    ip_addr=$(ip addr | grep -w "inet" | grep -v "127.0.0.1" | awk '{print $2}' | cut -d/ -f1 | head -n1 | awk -F. '{print $3"."$4}')
+
+    echo "IP: ${ip_addr:-Off}" > "$TMP/ip"
+    sleep 5m
+  done
 }
 
 get_cpu() {
-  read -r cpu a b c d rest < /proc/stat
-  prev_idle=$d
-  prev_total=$((a+b+c+d))
-
-  sleep 0.5
-
-  read -r cpu a b c d rest < /proc/stat
-  idle=$d
-  total=$((a+b+c+d))
-
-  usage=$((100 * ((total - prev_total) - (idle - prev_idle)) / (total - prev_total)))
-
-  temp=$(cat /sys/class/thermal/thermal_zone0/temp)
-  temp=$((temp / 1000))
-
-  echo "[CPU: $usage% / ${temp}°C]"
+  while true; do
+    local cpu a b c d rest prev_idle prev_total idle total diff_total usage temp
+    read -r cpu a b c d rest < /proc/stat
+    prev_idle=$d
+    prev_total=$((a+b+c+d))
+    sleep 0.5
+    read -r cpu a b c d rest < /proc/stat
+    idle=$d
+    total=$((a+b+c+d))
+    diff_total=$((total - prev_total))
+    [ "$diff_total" -gt 0 ] && usage=$((100 * (diff_total - (idle - prev_idle)) / diff_total)) || usage=0
+    temp=$(cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || echo "0")
+    echo "CPU: $usage% / $((temp / 1000))°C" > "$TMP/cpu"
+    sleep 1m
+  done
 }
 
 get_next_prayer() {
-	echo "[$(nextprayer)]";
-} 
+  while true; do
+    nextprayer > "$TMP/next_prayer"
+    sleep 1h
+  done
+}
 
-PREV_IDLE=0
-PREV_TOTAL=0
+get_ip &
+get_cpu &
+get_storage &
+get_ram &
+get_battery &
+get_volume &
+get_next_prayer &
 
 # Main Loop
 while true; do
-	xsetroot -name "$(get_ip) $(get_cpu) $(get_storage) $(get_ram) $(get_battery) $(get_volume) $(get_next_prayer)  $(get_time)"
-  sleep 2
+    update_bar
+    sleep 1 & wait $!
 done
