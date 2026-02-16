@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# 1. Get the primary local network in CIDR format (e.g., 192.168.1.0/24)
+# We look for the 'inet' line that isn't the loopback (lo)
+NETWORK=$(ip -o -f inet addr show | awk '/scope global/ {print $4}' | head -n 1)
+
+if [ -z "$NETWORK" ]; then
+    echo "Error: Could not determine network range."
+    exit 1
+fi
+
+# 2. Run Nmap:
+# -sn: Ping scan (no port scan)
+# -n:  No DNS resolution (massive speed boost)
+# -oG -: Output in Greppable format to stdout
+# awk: Filter for 'Up' hosts and print only the IP (column 2)
+nmap -sn -n "$NETWORK" -oG - | awk '/Up$/ {print $2}'

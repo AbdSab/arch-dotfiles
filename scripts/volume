@@ -2,8 +2,8 @@
 SINK="@DEFAULT_SINK@"
 
 case "$1" in
-  up)    pactl set-sink-volume $SINK +1% ;;
-  down)  pactl set-sink-volume $SINK -1% ;;
+  up)    pactl set-sink-volume $SINK +5% ;;
+  down)  pactl set-sink-volume $SINK -5% ;;
   mute)  pactl set-sink-mute   $SINK toggle ;;
 esac
 
