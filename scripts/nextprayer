@@ -2,7 +2,7 @@
 
 LAT="33.5731"
 LON="-7.5898"
-UTC=$(date +%z | sed 's/^+//; s/^0*//; s/^$/0/' )
+UTC=$(date +%:::z)
 ARGS="--utc $UTC --method mwl --asr shafi"
 
 FORMAT="%n %t"
